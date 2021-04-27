@@ -1,0 +1,76 @@
+{
+  "version-beta/docs": [
+    {
+      "collapsed": false,
+      "type": "category",
+      "label": "Guides",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-beta/guides/getting-started"
+        },
+        {
+          "type": "doc",
+          "id": "version-beta/guides/authentication"
+        },
+        {
+          "type": "doc",
+          "id": "version-beta/guides/importing-data"
+        },
+        {
+          "type": "doc",
+          "id": "version-beta/guides/load-model"
+        },
+        {
+          "type": "doc",
+          "id": "version-beta/guides/scene-operations"
+        }
+      ]
+    },
+    {
+      "collapsed": false,
+      "type": "category",
+      "label": "UI Components",
+      "items": [
+        {
+          "type": "doc",
+          "id": "version-beta/sdk"
+        },
+        {
+          "collapsed": false,
+          "type": "category",
+          "label": "Web UI Components",
+          "items": [
+            {
+              "type": "doc",
+              "id": "version-beta/sdk/sdk-web"
+            },
+            {
+              "type": "doc",
+              "id": "version-beta/sdk/sdk-web-getting-started"
+            },
+            {
+              "type": "doc",
+              "id": "version-beta/sdk/sdk-web-api"
+            }
+          ]
+        },
+        {
+          "collapsed": false,
+          "type": "category",
+          "label": "Xamarin UI Components",
+          "items": [
+            {
+              "type": "doc",
+              "id": "version-beta/sdk/sdk-xamarin"
+            },
+            {
+              "type": "doc",
+              "id": "version-beta/sdk/sdk-xamarin-getting-started"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

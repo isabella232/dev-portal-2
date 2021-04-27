@@ -1,0 +1,207 @@
+---
+id: import-metadata
+title: Import metadata
+description: Import your team's or organization's metadata properties into Vertex's Parts Library using Vertex's platform APIs.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+You can optionally import your team's or organization's metadata properties while importing data and add additional properties to existing part revisions.
+
+## Indexing during part creation
+
+While [creating parts](./import-data.mdx#creating-parts), set the `indexMetadata` request body parameter. This instructs Vertex to extract and index metadata properties from your 3D data.
+
+```json
+{
+  "data": {
+    "attributes": {
+      // highlight-start
+      "indexMetadata": true
+      // highlight-end
+      // ...other attributes...
+    },
+    "relationships": {
+      // ...relationships...
+    },
+    "type": "part"
+  }
+}
+```
+
+## Adding to existing part revisions
+
+To add metadata to existing part revisions, `PATCH` the [updatePartRevision](https://docs.vertexvis.com/#4dc8ffa1-c138-476f-ba9b-d3f1ca382223) API.
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request PATCH \
+  --url "https://platform.vertexvis.com/part-revisions/[YOUR_PART_REVISION_ID]" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+  --header "Content-Type: application/vnd.api+json" \
+  --data '{
+  "data": {
+    "attributes": {
+      "metadata": {
+        "MY_STRING_PROPERTY": {
+          "value": "PN12345",
+          "type": "string"
+        },
+        "MY_LONG_PROPERTY": {
+          "value": "12345",
+          "type": "long"
+        },
+        "MY_FLOAT_PROPERTY": {
+          "value": "123.45",
+          "type": "float"
+        },
+        "MY_DATE_PROPERTY": {
+          "value": "2021-01-01T12:00:00.000Z",
+          "type": "date"
+        }
+      }
+    },
+    "id": "[YOUR_PART_REVISION_ID]",
+    "type": "part-revision"
+  }
+}'
+```
+
+</TabItem>
+<TabItem value="res">
+
+```json
+{
+  "data": {
+    "type": "part-revision",
+    "id": "[YOUR_PART_REVISION_ID]",
+    "attributes": {
+      "created": "2021-01-01T12:00:00.000Z",
+      "suppliedId": "[YOUR_SUPPLIED_REVISION_ID]"
+    },
+    "relationships": {
+      "part": {
+        "type": "part",
+        "id": "[YOUR_PART_ID]"
+      }
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+Use the [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) representation for dates. Most languages provide a native mechanism for it.
+
+<Tabs
+  defaultValue="js"
+  values={[
+    { label: 'JavaScript/TypeScript', value: 'js', },
+    { label: 'C#', value: 'csharp', },
+    { label: 'Java/Scala/Kotlin', value: 'java', },
+  ]
+}>
+<TabItem value="js">
+
+```javascript
+new Date().toISOString();
+// 2021-01-01T12:00:00.000Z
+```
+
+</TabItem>
+<TabItem value="csharp">
+
+```csharp
+DateTime.UtcNow.ToString("o", System.Globalization.CultureInfo.InvariantCulture)
+  // 2021-01-01T12:00:00.0000000Z
+```
+
+</TabItem>
+<TabItem value="java">
+
+```java
+java.time.Instant.now().toString();
+  // 2021-01-01T12:00:00.000Z
+```
+
+</TabItem>
+</Tabs>
+
+## Getting metadata
+
+To get metadata for a part revisions, `GET` the [getPartRevision](https://docs.vertexvis.com/#3260f3e6-8264-4c44-b41d-595a4c37f14a) API. By default, the response does not include metadata. You must explicitly request it using the `fields[part-revision]=metadata` query parameter.
+
+:::note
+
+This API is eventually consistent. If you just added or updated metadata, it may take time for the response to reflect changes.
+:::
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --globoff --request GET \
+  --url "https://platform.vertexvis.com/part-revisions/[YOUR_PART_REVISION_ID]?fields[part-revision]=metadata" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+```
+
+</TabItem>
+<TabItem value="res">
+
+```json
+{
+  "data": {
+    "type": "part-revision",
+    "id": "[YOUR_PART_REVISION_ID]",
+    "attributes": {
+      "metadata": {
+        "MY_FLOAT_PROPERTY": {
+          "value": "123.45",
+          "type": "float"
+        },
+        "MY_LONG_PROPERTY": {
+          "value": "12345",
+          "type": "long"
+        },
+        "MY_STRING_PROPERTY": {
+          "value": "PN12345",
+          "type": "string"
+        },
+        "VERTEX_PART_NAME": {
+          "value": "STOP VALVE ASSEMBLY",
+          "type": "string"
+        },
+        "MY_DATE_PROPERTY": {
+          "value": "2021-01-01T12:00:00.000Z",
+          "type": "date"
+        }
+      }
+    },
+    "relationships": {
+      "part": {
+        "type": "part",
+        "id": "[YOUR_PART_ID]"
+      }
+    }
+  }
+}
+```
+
+</TabItem>
+</Tabs>

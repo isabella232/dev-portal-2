@@ -1,0 +1,100 @@
+---
+id: install-sdk
+title: Install Web UI Components
+description: Install the Vertex platform Web UI Components.
+---
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+You can install the Web UI Components with [npm](https://www.npmjs.com/get-npm), [Yarn](https://classic.yarnpkg.com/en/docs/install/), or get started quickly with static hosting or a CDN. For most users, installing from npm or Yarn is the best choice.
+
+Whichever you choose, be consistent and import all files from the same version of the library. Mixing files from different sources may cause duplicate code to be included or even break the application in unexpected ways.
+
+## npm module
+
+To install the [@vertexvis/viewer](https://www.npmjs.com/package/@vertexvis/viewer) npm module.
+
+<Tabs
+  defaultValue="npm"
+  values={[
+    { label: 'npm', value: 'npm', },
+    { label: 'Yarn', value: 'yarn', },
+  ]
+}>
+<TabItem value="npm">
+
+```shell
+npm install @vertexvis/viewer
+```
+
+</TabItem>
+<TabItem value="yarn">
+
+```shell
+yarn add @vertexvis/viewer
+```
+
+</TabItem>
+</Tabs>
+
+The package will be downloaded and installed. Then you're ready to import it into your code.
+
+```js
+import { defineCustomElements } from '@vertexvis/viewer/loader';
+
+defineCustomElements(window).then(() => main());
+
+async function main() {
+  const viewer = document.querySelector('vertex-viewer');
+  await viewer.load(
+    'urn:vertexvis:stream-key:U9cSWVb7fvS9k-NQcT28uZG6wtm6xmiG0ctU'
+  );
+  console.log('Loaded!');
+}
+```
+
+If you plan on targeting IE11 or Edge <= 18, you'll also need to supply polyfills for the Web Components APIs (Custom Elements, Shadow DOM, CSS Variables, etc). To include the polyfills, import `applyPolyfills` from the loader.
+
+```js
+import { applyPolyfills, defineCustomElements } from '@vertexvis/viewer/loader';
+
+applyPolyfills()
+  .then(() => defineCustomElements(window))
+  .then(() => main());
+
+function main() {
+  // ...
+}
+```
+
+## CDN or static hosting
+
+The UI Components can be used without any build system, either by uploading files to your web server or using an existing CDN. Because it relies on ES modules, any script that references it must use `type="module"` as shown.
+
+```html
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/@vertexvis/viewer@0.9.x/dist/viewer/viewer.css"
+    />
+  </head>
+  <body>
+    <script
+      type="module"
+      src="https://unpkg.com/@vertexvis/viewer@0.9.x/dist/viewer/viewer.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/@vertexvis/viewer@0.9.x/dist/viewer.js"
+    ></script>
+  </body>
+</html>
+```
+
+## React bindings
+
+For up-to-date installation instructions for our React bindings, see the [`viewer-react` README](https://github.com/Vertexvis/vertex-web-sdk/tree/master/packages/viewer-react).

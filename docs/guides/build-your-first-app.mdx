@@ -1,0 +1,225 @@
+---
+id: build-your-first-app
+title: Build your first application
+description: Use the Vertex platform's NextJS starter to build your first application.
+---
+
+import { ProtectSecretNote } from '@site/src/components/ProtectSecretNote';
+
+You have now [rendered your first scene](./render-your-first-scene.mdx) and [imported your data](./import-data.mdx). Next, let's build an application you can deploy publicly!
+
+We'll be using the Vertex Web UI Components, which are standards-based [web components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). You could create your app using plain JavaScript, but we'll use [NextJS](https://nextjs.org/), a [React](https://reactjs.org/)-based framework with a great developer experience.
+
+To get an idea of what you'll be building, check out this [example application](https://nextjs-starter.vertexvis.io/?clientId=08F675C4AACE8C0214362DB5EFD4FACAFA556D463ECA00877CB225157EF58BFA&streamKey=U9cSWVb7fvS9k-NQcT28uZG6wtm6xmiG0ctU) we created.
+
+## Before we start
+
+The following diagram gives an overview of how your applications interact with the Vertex Cloud.
+
+![Vertex Platform Architecture](/img/vertex-platform-architecture@4x.png 'Vertex Platform Architecture')
+
+In the [Render your first scene](./render-your-first-scene.mdx) guide, we focused on the **Your Application** section, communicating with the Vertex WebSocket using Vertex's test stream key. In the [Import data](./import-data.mdx) guide, instead of having you create an API in the **Your Cloud** section, we used the Vertex CLI, which uses the Vertex API Client to communicate with the Vertex REST API using OAuth tokens.
+
+In this guide, we'll create a deployable application with an API. With this application, you can securely talk to both the Vertex WebSocket and Vertex REST API. Using these pieces, the full power of the Vertex platform is in your hands.
+
+## Creating your application
+
+Use our [NextJS Starter template](https://github.com/Vertexvis/vertex-nextjs-starter) on GitHub. Press the **Use this template** button to create a new repository as your starting point. If you'd rather use something other than GitHub, simply clone the repository.
+
+Once your repository exists, start the application with [Yarn](https://classic.yarnpkg.com/en/docs/install/).
+
+```shell
+# Install dependencies
+yarn install
+
+# Start development server
+yarn dev
+```
+
+Browse to [http://localhost:3000](http://localhost:3000) to see your application displaying the Vertex test scene!
+
+## Opening your scene
+
+You can open different scenes in your application using the **Open Scene** button. Each scene requires both your Vertex client ID and a stream key.
+
+To create a stream key, you'll need your scene ID from the [Import data](./import-data.mdx) guide. If you have it handy, great! If not, you can list your scenes with the CLI and copy the ID.
+
+```shell
+vertex scenes:list --extended
+```
+
+Stream keys grant Vertex's Viewer UI component access to your scene. The default stream key expiration is 10 minutes (600 seconds). You can increase this to a maximum of 24 hours (86000 seconds) using the `--expiry` flag.
+
+```shell
+vertex stream-keys:create --sceneId [YOUR_SCENE_ID] --expiry 86000
+```
+
+Now, in your application, click **Open Scene**, enter your client ID and stream key, and click **Open Scene**. You'll now see your scene instead of the test scene.
+
+## Understanding the code
+
+Start by opening [`src/pages/index.tsx`](https://github.com/Vertexvis/vertex-nextjs-starter/blob/main/src/pages/index.tsx). We'll walk through the `Home` function in pieces.
+
+```tsx
+// Prefer credentials in URL to enable easy scene sharing.
+// If they don't exist, check local storage. If empty, use defaults.
+const router = useRouter();
+const { clientId: queryId, streamKey: queryKey } = router.query;
+const stored = getStoredCreds();
+const [credentials, setCredentials] = React.useState<StreamCredentials>({
+  clientId: queryId?.toString() || stored.clientId || DefaultClientId,
+  streamKey: queryKey?.toString() || stored.streamKey || DefaultStreamKey,
+});
+
+// On credentials changes, update URL and store in local storage.
+React.useEffect(() => {
+  router.push(encodeCreds(credentials));
+  setStoredCreds(credentials);
+}, [credentials]);
+
+// Open dialog if 'o' key pressed
+const keys = useKeyListener();
+React.useEffect(() => {
+  if (!dialogOpen && keys.o) setDialogOpen(true);
+}, [keys]);
+
+const viewer = useViewer();
+const [dialogOpen, setDialogOpen] = React.useState(false);
+const [properties, setProperties] = React.useState<Properties>({});
+const ready = credentials.clientId && credentials.streamKey && viewer.isReady;
+```
+
+At the top, we configure variables we'll need later. We also use [React effect hooks](https://reactjs.org/docs/hooks-effect.html) to update the URL and local storage on credential changes and listen for 'o' key presses to open the **Open Scene** dialog.
+
+Now, the fun stuff. We return a [`JSX`](https://reactjs.org/docs/jsx-in-depth.html) element representing your application.
+
+```tsx
+return (
+  <Layout
+    header={<OpenButton onClick={() => setDialogOpen(true)} />}
+    main={
+      ready && (
+        <Viewer
+          configEnv={Env}
+          credentials={credentials}
+          onSelect={async (hit) => {
+            setProperties(toProperties({ hit }));
+            await selectByHit({ hit, viewer: viewer.ref.current });
+          }}
+          viewer={viewer.ref}
+        />
+      )
+    }
+    rightDrawer={<RightDrawer properties={properties} />}
+  >
+    {dialogOpen && (
+      <OpenDialog
+        credentials={credentials}
+        onClose={() => setDialogOpen(false)}
+        onConfirm={(cs) => {
+          setCredentials(cs);
+          setDialogOpen(false);
+        }}
+        open={dialogOpen}
+      />
+    )}
+  </Layout>
+);
+```
+
+Let's break this down to see exactly what's happening:
+
+- We return the application's components wrapped in a `Layout`.
+- The header includes the **Open Scene** button.
+- Next is the main application content:
+  - If `ready`, we display the `Viewer` component.
+  - With the `onSelect` callback, we set the properties state. Then, call a utility function similar to the [Render your first scene](./render-your-first-scene.mdx) guide's function to perform item selection.
+- The right drawer receives the metadata properties for display.
+- Finally, the **Open Scene** dialog. It's shown if the `dialogOpen` React state is `true`. We pass two callbacks:
+  - `onClose` closes the dialog.
+  - `onConfirm` updates the credentials, then closes the dialog.
+
+## Calling the Vertex API
+
+Browse to [http://localhost:3000/api/files](http://localhost:3000/api/files). You should get a `401: Unauthorized` error. The application doesn't know your Vertex client ID and secret, so it cannot make API calls on your behalf. Let's fix that.
+
+In your terminal, type `Ctrl+C` to stop the development server. NextJS has [built-in support for environment variables](https://nextjs.org/docs/basic-features/environment-variables), and the Vertex NextJS Starter comes with a `.env.local.template` file you can rename to make it easier for you to set them.
+
+```shell
+mv .env.local.template .env.local
+```
+
+Open `.env.local` and set the `VERTEX_CLIENT_ID` and `VERTEX_CLIENT_SECRET` to your Vertex client ID and secret. You can leave `NEXT_PUBLIC_VERTEX_ENV` blank. Since the environment variables don't start with `NEXT_PUBLIC_`, they are only exposed server-side, keeping your client secret safe.
+
+:::note
+
+<ProtectSecretNote />
+:::
+
+Now, start the development server again and browse to [http://localhost:3000/api/files](http://localhost:3000/api/files). You should see a list of files you've uploaded!
+
+How does this work? Go ahead and open [`src/pages/api/files.ts`](https://github.com/Vertexvis/vertex-nextjs-starter/blob/main/src/pages/api/files.ts).
+
+```ts
+export default async function getFiles(
+  req: NextApiRequest,
+  res: NextApiResponse<FileList | Failure>
+): Promise<void> {
+  return makeCall(res, (client) => client.files.getFiles({ pageSize: 5 }));
+}
+```
+
+We're using NextJS [API Routes](https://nextjs.org/docs/api-routes/introduction) and the `makeCall` helper function. Open [`src/lib/vertex-api.ts`](https://github.com/Vertexvis/vertex-nextjs-starter/blob/main/src/lib/vertex-api.ts) to see what that does.
+
+```ts
+export async function makeCall<T>(
+  res: NextApiResponse<T | Failure>,
+  apiCall: (client: VertexClient) => Promise<AxiosResponse<T>>
+): Promise<void> {
+  try {
+    const c = await getClient();
+    res.status(200).json((await apiCall(c)).data);
+  } catch (error) {
+    const failure = error.vertexError?.res;
+    if (!failure) {
+      const errors = new Set<ApiError>();
+      errors.add({ status: '500', title: 'Unknown error from Vertex API.' });
+      failure.errors = errors;
+    }
+
+    res.status(parseInt(head(failure.errors)?.status ?? 500, 10)).json(failure);
+  }
+}
+
+let Client: VertexClient | undefined;
+async function getClient(): Promise<VertexClient> {
+  if (Client != null) return Client;
+
+  Client = await VertexClient.build({
+    client: {
+      id: process.env.VERTEX_CLIENT_ID ?? '',
+      secret: process.env.VERTEX_CLIENT_SECRET ?? '',
+    },
+  });
+
+  return Client;
+}
+```
+
+`makeCall` calls `getClient`, which creates a Vertex API Client if it doesn't already exist using the environment variables we provided. It then uses the client to call the Vertex API and handles possible errors.
+
+## Deploying your application
+
+Follow one of these guides to deploy your application. If you're not sure which to choose, we recommend Vercel.
+
+- [Vercel](https://nextjs.org/docs/deployment): From the creators of NextJS, they know best how to deploy their framework. It's as easy as linking your GitHub/GitLab/Bitbucket account, adding environment variables, and visiting your site! On each `git push`, Vercel automatically deploys a new version using [Vercel Serverless Functions](https://vercel.com/docs/serverless-functions/introduction) for APIs.
+- [Netlify](https://www.netlify.com/blog/2020/11/30/how-to-deploy-next.js-sites-to-netlify/): Similar to Vercel and just as easy. They use [Netlify Functions](https://www.netlify.com/products/functions/) for APIs.
+- [AWS CDK](https://github.com/serverless-nextjs/serverless-next.js#readme): If you already have sites deployed in AWS, this CDK construct helps deploy NextJS, using [Lambda@Edge](https://aws.amazon.com/lambda/edge/) for APIs.
+
+## Wrapping up
+
+Congratulations! To recap the concepts learned so far:
+
+- The NextJS framework uses React. It allows us to create client-side and server-side portions of applications, giving you the full power of the Vertex platform.
+- Your application uses Vertex UI Components and makes calls to its own API. The UI Components communicate with the Vertex WebSocket using stream keys. Your API uses the Vertex API Client and OAuth tokens to communicate with the Vertex API.
+- There are many deployment options to deploy and share applications built with Vertex.

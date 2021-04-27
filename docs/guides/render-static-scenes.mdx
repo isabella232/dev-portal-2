@@ -1,0 +1,320 @@
+---
+id: render-static-scenes
+title: Render static scenes
+description: Create and render 3D scenes using the Vertex platform APIs and SDKs.
+---
+
+import { Mermaid } from '@site/src/components/Mermaid';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+Create scenes from collections of parts through the scene APIs. Then, use these APIs and the Viewer component to view rendered scenes and change scene item attributes such as visibility and color material. This API introduces the following concepts:
+
+- Scene: A blueprint for what your users see. Scenes are collections of scene items.
+- Scene item: The viewable objects in a scene. Scene items reference geometry from parts in the Parts Library. Scene items contain transforms describing their orientation within the scene, optional color material overrides, and visibility flags.
+- Scene view: A viewing session for an individual user. Scene views are created from scenes, inherit the scene's content, and reflect scene changes. Users may modify their scene view without affecting the underlying scene.
+
+To create and view scenes, do the following:
+
+- Create a scene.
+- Within that scene, create scene items referencing parts in the Parts Library.
+- Commit the scene and optionally update the camera.
+- Either use the API to fetch a scene image or use the Viewer component to create and view a scene view.
+
+<Mermaid
+  chart={`
+  sequenceDiagram
+  participant C as Client App
+  participant V as Viewer
+  participant API as Vertex API
+      Note over C,API: Create scene and scene items
+      C->>+API: Create scene
+      API-->>-C: Scene ID
+      C->>+API: Initiate scene items with scene and part-revision IDs
+      API-->>-C: Queued scene item ID
+      loop Check status
+        C->>+API: Check scene item status with queued scene item ID
+        API-->>-C: If running, status | If complete, redirect to scene item
+      end
+      C->>+API: Update scene with state=commit
+      API-->>-C: Scene ID
+      Note over C,API: View scene
+      C->>+API: Fetch scene image
+      API-->>-C: Image
+      C->>+V: WebSocket connection
+      V-->>-C: Images
+`}
+/>
+
+## Creating scenes and scene items
+
+To create scenes, `POST` to the [createScene](https://docs.vertexvis.com/#fe3357f4-c86d-49d2-832a-e76f1f386cc3) API.
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request POST \
+  --url "https://platform.vertexvis.com/scenes" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+  --header "Content-Type: application/vnd.api+json" \
+  --data '{
+  "data": {
+    "attributes": {},
+    "type": "scene"
+  }
+}'
+```
+
+</TabItem>
+<TabItem value="res">
+
+```json
+{
+  "data": {
+    "attributes": {
+      "camera": {
+        "lookAt": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "position": { "x": 0.0, "y": 0.0, "z": -100.0 },
+        "up": { "x": 0.0, "y": 1.0, "z": 0.0 }
+      },
+      // highlight-next-line
+      "state": "draft"
+    },
+    // highlight-next-line
+    "id": "[YOUR_SCENE_ID]",
+    "type": "scene"
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+Now that the scene resource exists, `POST` to the [createSceneItem](https://docs.vertexvis.com/#d597f539-3785-4c83-a645-fdf3a9a90521) API. This API is asynchronous, returning the status of a queued scene item. See the [Matrix transformations](./matrix-transformations) reference for an explanation of the `transform` property.
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request POST \
+  // highlight-next-line
+  --url "https://platform.vertexvis.com/scenes/[YOUR_SCENE_ID]/scene-items" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+  --header "Content-Type: application/vnd.api+json" \
+  --data '{
+  "data": {
+    "attributes": {
+      "suppliedId": "[YOUR_SUPPLIED_ID]",
+      // highlight-start
+      "transform": {
+        "r0": { "x": 1, "y": 0, "z": 0, "w": 0 },
+        "r1": { "x": 0, "y": 1, "z": 0, "w": 0 },
+        "r2": { "x": 0, "y": 0, "z": 1, "w": 0 },
+        "r3": { "x": 0, "y": 0, "z": 0, "w": 1 }
+      }
+      // highlight-end
+    },
+    "relationships": {
+      "source": {
+        "data": {
+          // highlight-next-line
+          "id": "[YOUR_PART_REVISION_ID]",
+          "type": "part-revision"
+        }
+      }
+    },
+    "type":"scene-item"
+  }
+}'
+```
+
+</TabItem>
+<TabItem value="res">
+
+```json
+{
+  "data": {
+    "attributes": {
+      "status": "running"
+    },
+    // highlight-next-line
+    "id": "[YOUR_QUEUED_SCENE_ITEM_ID]",
+    "type": "queued-scene-item"
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+To check the status of queued scene items, `GET` the [getQueuedSceneItem](https://docs.vertexvis.com/#f11ab42d-fda6-432c-b219-f7f59299c2eb) API. The response returns one of the following:
+
+- The status if `running`.
+- An `error` (similar to the response above).
+- Upon completion, redirects to the created scene item.
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request GET \
+  // highlight-next-line
+  --url "https://platform.vertexvis.com/queued-scene-items/[YOUR_QUEUED_SCENE_ITEM_ID]" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+  --location
+```
+
+</TabItem>
+<TabItem value="res">
+
+```json
+{
+  "data": {
+    "attributes": {
+      "suppliedId": "[YOUR_SUPPLIED_ID]",
+      "transform": {
+        "r0": { "x": 1.0, "y": 0.0, "z": 0.0, "w": 0.0 },
+        "r1": { "x": 0.0, "y": 1.0, "z": 0.0, "w": 0.0 },
+        "r2": { "x": 0.0, "y": 0.0, "z": 1.0, "w": 0.0 },
+        "r3": { "x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+      },
+      "visible": true
+    },
+    // highlight-next-line
+    "id": "[YOUR_SCENE_ITEM_ID]",
+    "relationships": {
+      "source": {
+        "data": {
+          "id": "[YOUR_PART_REVISION_ID]",
+          "type": "part-revision"
+        }
+      }
+    },
+    "type": "scene-item"
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+Now that the scene contains scene items, commit it with a `PATCH` to the [updateScene](https://docs.vertexvis.com/#5fa99d4f-85d6-451d-abda-e0459830daf4) API.
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request PATCH \
+  // highlight-next-line
+  --url "https://platform.vertexvis.com/scenes/[YOUR_SCENE_ID]" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+  --header "Content-Type: application/vnd.api+json" \
+  --data '{
+  "data": {
+    "attributes": {
+      // highlight-next-line
+      "state": "commit"
+    },
+    "type": "scenes"
+  }
+}
+```
+
+</TabItem>
+<TabItem value="res">
+
+```json
+{
+  "data": {
+    "attributes": {
+      "camera": {
+        "lookAt": { "x": 0.0, "y": 0.0, "z": 0.0 },
+        "position": { "x": 0.0, "y": 0.0, "z": -100.0 },
+        "up": { "x": 0.0, "y": 1.0, "z": 0.0 }
+      },
+      // highlight-next-line
+      "state": "commit"
+    },
+    "id": "[YOUR_SCENE_ID]",
+    "type": "scene"
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Viewing scenes
+
+View scenes either by getting a scene image from the API or using the Viewer component.
+
+:::note
+If you do not see any items in your scene, make sure the scene is in the `commit` state. If it is, try updating the camera with the [updateScene](https://docs.vertexvis.com/#5fa99d4f-85d6-451d-abda-e0459830daf4) API.
+:::
+
+### In the API
+
+To get a scene image, `GET` the [renderScene](https://docs.vertexvis.com/#defdc52f-a574-4f65-92f9-d59bba85ca1a) API.
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request GET \
+  // highlight-next-line
+  --url "https://platform.vertexvis.com/scenes/[YOUR_SCENE_ID]/image?width=1000&height=1000" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+  // highlight-next-line
+  --output "scene-image.jpg"
+```
+
+</TabItem>
+<TabItem value="res">
+
+Open `scene-image.jpg` to view your scene
+
+</TabItem>
+</Tabs>
+
+### In the Viewer component
+
+To view the scene, create a stream key [described here](./authentication.mdx#in-the-viewer-sdk) and pass it to the `viewer.load` method. When loading scenes with the Viewer component, Vertex creates scene views as described above.
+
+```javascript
+async function main() {
+  const viewer = document.querySelector('#viewer');
+  // highlight-next-line
+  await viewer.load('urn:vertexvis:stream-key:[YOUR_STREAM_KEY]');
+}
+```

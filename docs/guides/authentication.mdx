@@ -1,0 +1,163 @@
+---
+id: authentication
+title: Authentication
+description: Gain secure access to Vertex platform APIs and SDKs.
+---
+
+import { Mermaid } from '@site/src/components/Mermaid';
+import { ProtectSecretNote } from '@site/src/components/ProtectSecretNote';
+import { SignUpNote } from '@site/src/components/SignUpNote';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+:::note
+
+<SignUpNote />
+:::
+
+Gain secure access to the Vertex APIs by exchanging OAuth 2.0 application credentials for an access token.
+
+The flow is as follows:
+
+- Your application makes a secure HTTP call, providing its application credentials. You receive an access token in response.
+- When making subsequent Vertex API calls, your application includes the access token.
+
+<Mermaid
+  chart={`
+  sequenceDiagram
+  participant CF as Client App Frontend
+  participant C as Client App
+  participant V as Vertex API clients
+  participant API as Vertex API
+    CF->>+C: Authenticate
+    C->>+API: Request token with application credentials
+    API-->>-C: Token response
+    C-->>-CF: Token
+    CF->>+V: API client call with token
+    V-->>-CF: API client response
+    C->>+API: API request with token
+    API-->>-C: API response
+`}
+/>
+
+## Creating access tokens
+
+To create an access token, `POST` to the [createToken](https://docs.vertexvis.com/#f8c5dc19-0f68-442e-8d28-aa03be2c48fb) API with your application credentials. The token API uses HTTP basic access authentication. The request contains the `Authorization: Basic [YOUR_CREDENTIALS]` header, where `YOUR_CREDENTIALS` is the Base64 encoding of your Vertex client ID and secret joined by a colon. The following command performs this encoding and creates an access token.
+
+:::note
+
+<ProtectSecretNote />
+:::
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request POST \
+  // highlight-next-line
+  --url "https://platform.vertexvis.com/oauth2/token" \
+  --header "Authorization: Basic $(echo -n "[YOUR_CLIENT_ID]:[YOUR_CLIENT_SECRET]" | base64)" \
+  --header "Content-Type: application/x-www-form-urlencoded" \
+  --data-urlencode "grant_type=client_credentials"
+```
+
+</TabItem>
+<TabItem value="res">
+
+```json
+{
+  // highlight-next-line
+  "access_token": "[YOUR_ACCESS_TOKEN]",
+  "account_id": "[YOUR_ACCOUNT_ID]",
+  "expires_in": 3600,
+  "scopes": [],
+  "token_type": "bearer"
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Using access tokens
+
+Access tokens are valid for one hour. Include them as a bearer token in the `Authorization` header for subsequent API calls.
+
+```shell
+curl --location --request GET \
+  --url "https://platform.vertexvis.com/files" \
+  // highlight-next-line
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]"
+```
+
+## Viewer component
+
+The Viewer component authenticates using stream keys. These keys grant access to specific scenes, so you'll need one first. If you don't have one, create one by following the [Import data](./import-data.mdx) and [Render static scenes](./render-static-scenes.mdx) guides. Then, to create a stream key, `POST` to the [createSceneStreamKey](https://docs.vertexvis.com/#dd9c119e-5808-4bc5-8aeb-afc1ca34362d) API.
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request POST \
+  // highlight-next-line
+  --url "https://platform.vertexvis.com/scenes/[YOUR_SCENE_ID]/stream-keys" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+  --header "Content-Type: application/vnd.api+json" \
+  --data '{
+  "data": {
+    "attributes": {
+      "expiry": 600
+    },
+    "type": "stream-key"
+  }
+}'
+```
+
+</TabItem>
+<TabItem value="res">
+
+```json
+{
+  "data": {
+    "attributes": {
+      // highlight-next-line
+      "key": "[YOUR_STREAM_KEY]",
+      "expiry": 600
+    },
+    "id": "[YOUR_STREAM_KEY_ID]",
+    "relationships": {
+      "scene": {
+        "data": {
+          "id": "[YOUR_SCENE_ID]",
+          "type": "scene"
+        }
+      }
+    },
+    "type": "stream-key"
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+Now, pass the stream key to the `viewer.load` method in the Viewer component.
+
+```javascript
+async function main() {
+  const viewer = document.querySelector('vertex-viewer');
+  // highlight-next-line
+  await viewer.load('urn:vertexvis:stream-key:[YOUR_STREAM_KEY]');
+}
+```

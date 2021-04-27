@@ -1,0 +1,305 @@
+---
+id: glossary
+title: Glossary
+description: Definitions of Vertex platform terms.
+---
+
+import { DescriptionList } from '@site/src/components/DescriptionList';
+
+## A
+
+<DescriptionList
+  items={[
+    {
+      term: 'access token',
+      definition: (
+        <>
+          A secure type of authentication that is used to make API requests on a
+          user's behalf. Vertex uses{' '}
+          <a href="https://oauth.net/2/">OAuth 2.0</a> Bearer tokens to
+          authorize a specific application to access specific pieces of a user's
+          data. Each token is valid for one hour.
+        </>
+      ),
+    },
+    {
+      term: 'assembly',
+      definition: (
+        <>
+          A structured collection of subassembly and part geometry. An assembly
+          is considered a part in the Parts Library. However, it's a part with a
+          hierarchy and children.
+        </>
+      ),
+    },
+  ]}
+/>
+
+## C
+
+<DescriptionList
+  items={[
+    {
+      term: 'camera',
+      definition: (
+        <>
+          Represents the position, direction, and perspective in which you view
+          your scene. Simple mouse and touchscreen actions let you rotate, pan,
+          and zoom the camera's viewpoint in the Viewer component. You can also
+          set camera parameters using API calls.
+        </>
+      ),
+    },
+  ]}
+/>
+
+## F
+
+<DescriptionList
+  items={[
+    {
+      term: 'file revision',
+      definition: (
+        <>
+          See{' '}
+          <a href="#p">
+            <i>part revision</i>
+          </a>
+          .
+        </>
+      ),
+    },
+  ]}
+/>
+
+## G
+
+<DescriptionList
+  items={[
+    {
+      term: 'geometry set',
+      definition: (
+        <>
+          The lowest-level geometric primitives (the simplest of geometric
+          shapes). In most cases, use the parts APIs instead.
+        </>
+      ),
+    },
+  ]}
+/>
+
+## M
+
+<DescriptionList
+  items={[
+    {
+      term: 'material',
+      definition: (
+        <>
+          A representative substance that is applied to 3D models to create a
+          more realistic appearance. For example, a color, chrome, or glass.
+        </>
+      ),
+    },
+  ]}
+/>
+
+## O
+
+<DescriptionList
+  items={[
+    {
+      term: 'organization',
+      definition: (
+        <>The business or company that a user's account is associated with.</>
+      ),
+    },
+  ]}
+/>
+
+## P
+
+<DescriptionList
+  items={[
+    {
+      term: 'part',
+      definition: (
+        <>
+          A reference to geometry imported into the Parts Library. It may also
+          contain metadata, PMI, etc. An assembly is also a part, but with a
+          hierarchy and children.
+        </>
+      ),
+    },
+    {
+      term: 'part revision',
+      definition: (
+        <>
+          A specific version of a part. Your Parts Library may contain multiple
+          revisions of a single part.
+        </>
+      ),
+    },
+    {
+      term: 'Parts Library',
+      definition: (
+        <>
+          A repository where you import your organization's parts. You can build
+          scenes using any combination of these parts.
+        </>
+      ),
+    },
+    {
+      term: 'platform account',
+      definition: (
+        <>
+          A personal data repository where you maintain applications and data.
+        </>
+      ),
+    },
+  ]}
+/>
+
+## R
+
+<DescriptionList
+  items={[
+    {
+      term: 'rendering session',
+      definition: (
+        <>
+          The viewing or rendering of at least one frame in a browser or mobile
+          application. Each rendering session lasts 30 minutes and is considered
+          one unit. You can render as many frames as you like during each
+          session before being charged for additional sessions.
+        </>
+      ),
+    },
+  ]}
+/>
+
+## S
+
+<DescriptionList
+  items={[
+    {
+      term: 'scene',
+      definition: (
+        <>
+          What you see displayed in a viewer. Scenes contain a collection of
+          scene items (references to parts or geometry sets).
+        </>
+      ),
+    },
+    {
+      term: 'scene alteration',
+      definition: (
+        <>
+          A collection of operations performed on scene items in scene views.
+          For example, updating the material on multiple scene items at once or
+          resetting transforms.
+        </>
+      ),
+    },
+    {
+      term: 'scene item',
+      definition: (
+        <>
+          The viewable objects in a scene. Scene items reference either parts in
+          the Parts Library or geometry sets. A scene item includes transforms
+          that describe its orientation within the scene, and optional color
+          material and visibility overrides. When you add a scene item that
+          references a part with hierarchy, scene items get added for the parent
+          part and all children.
+        </>
+      ),
+    },
+    {
+      term: 'scene view',
+      definition: (
+        <>
+          Used to isolate scene modifications such as camera and scene item
+          updates. This lets users view and modify a scene without their changes
+          impacting others who are viewing the same scene. When you load a scene
+          using the Viewer component, your scene view is created, and is
+          typically viewed in a browser or mobile application.
+        </>
+      ),
+    },
+    {
+      term: 'scene view state',
+      definition: (
+        <>
+          A saved scene view. When you create a scene view state, you're
+          capturing the scene view as it appears in the viewer–the camera
+          position, visibility, transforms, materials, etc. This makes it easy
+          to return to saved states.
+        </>
+      ),
+    },
+    {
+      term: 'session',
+      definition: (
+        <>
+          See{' '}
+          <a href="#r">
+            <i>rendering session</i>
+          </a>
+          .
+        </>
+      ),
+    },
+    {
+      term: 'stream key',
+      definition: (
+        <>
+          A secure type of authentication used to grant the Viewer component
+          access to view a specific scene for a specified time.
+        </>
+      ),
+    },
+  ]}
+/>
+
+## T
+
+<DescriptionList
+  items={[
+    {
+      term: 'transform',
+      definition: (
+        <>
+          The term used to describe translating, scaling, and rotating a scene
+          item.
+        </>
+      ),
+    },
+  ]}
+/>
+
+## V
+
+<DescriptionList
+  items={[
+    {
+      term: 'Web UI Components',
+      definition: (
+        <>
+          UI components developers can use to build browser based 3D
+          applications. They contains{' '}
+          <a href="https://developer.mozilla.org/en-US/docs/Web/Web_Components">
+            Web Components
+          </a>{' '}
+          you can embed into simple JavaScript applications or more complex web
+          applications built with React, Vue or Angular.
+        </>
+      ),
+    },
+    {
+      term: 'visibility',
+      definition: (
+        <>The visual state of your scene item–either shown or hidden.</>
+      ),
+    },
+  ]}
+/>

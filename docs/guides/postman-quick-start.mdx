@@ -1,0 +1,79 @@
+---
+id: postman-quick-start
+title: Postman quick start
+description: Quick start guide for the Vertex platform using Postman.
+---
+
+import { PostmanInfo } from '@site/src/components/PostmanInfo';
+import { ProtectSecretNote } from '@site/src/components/ProtectSecretNote';
+import { SignUpNote } from '@site/src/components/SignUpNote';
+
+For advanced functionality beyond what our UI Components provide, you can optionally integrate directly with our API. These guides show examples using `curl`. If you're less comfortable with the command line, though, Postman is a better choice.
+
+[Postman](https://www.postman.com/) is a tool to build and test HTTP requests in an easy-to-use interface without configuring a full development environment. Vertex provides a Postman Collection, a set of pre-configured API requests getting you started with the API without manually configuring each request.
+
+## Open Vertex's Postman collection
+
+1. [Download and install Postman](https://www.postman.com/downloads/).
+2. In the upper-right corner of our [API Reference](https://docs.vertexvis.com/) documentation, click **Run in Postman**.
+
+The collection contains the reference documentation as well, as shown below.
+
+![Postman collection documentation](/img/postman-documentation.png 'Postman collection documentation')
+
+Notes about the Postman collection and API Reference code samples,
+
+<PostmanInfo />
+
+## Get an access token
+
+You gain secure access to Vertex APIs by exchanging OAuth 2.0 application credentials for an access token. Subsequent Postman calls will then include the access token in the `Authorization` header automatically.
+
+:::note
+
+<SignUpNote />
+:::
+
+1. In Postman, on the left pane, right-click **Vertex Platform API** collection.
+2. Click **Edit**.
+
+![Postman edit collection](/img/postman-edit-collection.png 'Postman edit collection')
+
+3. In the **Edit Collection** dialog, click the **Authorization** tab.
+4. On the left, set **Type** to **OAuth 2.0**.
+5. On the right, from **Grant Type**, select **Client Credentials**.
+6. Enter the Vertex **Client ID** and **Client Secret** that you received when you created your Vertex account.
+
+![Postman edit collection dialog](/img/postman-edit-collection-dialog.png 'Postman edit collection dialog')
+
+7. Click **Get New Access Token**.
+8. Click **Proceed** and then **Use Token** on the next two dialogs.
+9. In the bottom right corner, click **Update**.
+
+:::note
+
+<ProtectSecretNote />
+:::
+
+Congratulations! You got an access token and are ready to make API calls.
+
+:::note
+
+Access tokens expire in 60 minutes to help keep your data safe. If you receive a `401: Unauthorized` error, it may indicate an expired access token. Perform the steps above to get a new one.
+:::
+
+## Make API requests
+
+Select a request from the Vertex Platform API collection. In this example, we use `get Files` in the `files` folder.
+
+The Params tab (and Body tab if this were a `POST` or `PATCH` request) include all required and optional parameters for completeness. They may also use auto-generated values, as shown below.
+
+![Postman get files](/img/postman-get-files.png 'Postman get files')
+
+1. Unselect the checkbox next to each parameter to use the defaults.
+1. On the **Authorization** tab, for **Type**, select **Inherit auth from parent**.
+1. Click **Send** to the right of the request URL, and you'll see the response in the bottom pane.
+
+![Postman get files response](/img/postman-get-files-response.png 'Postman get files response')
+
+The `data` array in the response is empty since we haven't created any files yet. Let's change that by following the [Import data](./import-data.mdx) guide.

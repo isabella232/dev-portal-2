@@ -1,0 +1,6 @@
+.gitignore
+/.docusaurus
+/build
+/static/examples
+/src/components/SwaggerUI.js
+/src/theme/SearchBar

@@ -1,0 +1,256 @@
+---
+id: import-data-with-api
+title: Import data
+description: Import your team's or organization's parts into Vertex's Parts Library using Vertex's platform APIs.
+---
+
+import { ImportAssemblyNote } from '@site/src/components/ImportAssemblyNote';
+import { Mermaid } from '@site/src/components/Mermaid';
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+Vertex's Parts Library is a repository of your team's or organization's parts, each with references to geometry and optional metadata.
+
+To import your 3D data into the Parts Library, do the following:
+
+- Create a file resource and upload your 3D data to it. Your files may contain either individual parts or larger assemblies.
+- Initiate a translation to create parts from the data contained in the file.
+
+<Mermaid
+  chart={`
+  sequenceDiagram
+  participant C as Client App
+  participant API as Vertex API
+      Note over C,API: Upload file
+      C->>+API: Create file with metadata
+      API-->>-C: File ID
+      C->>+API: Upload file contents with file ID
+      API-->>-C: 204
+      Note over C,API: Initiate translation
+      C->>+API: Initiate translation with file ID
+      API-->>-C: Queued translation ID
+      loop Check status
+        C->>+API: Check translation status with queued translation ID
+        API-->>-C: If running, status | If complete, redirect to part
+      end
+`}
+/>
+
+## Uploading files
+
+See our [supported file formats](./supported-file-formats.mdx). If you do not have 3D data handy, you can download [`vertex-valve.jt`](https://vertex-public-binaries.s3-us-west-2.amazonaws.com/vertex-valve.jt) to follow along. To create files in one of these formats, `POST` to the [createFile](https://docs.vertexvis.com/#a8f05429-036c-45b8-89ef-6bd3aa14a7fe) API.
+
+:::note
+
+<ImportAssemblyNote />
+
+:::
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request POST \
+  --url "https://platform.vertexvis.com/files" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+  --header "Content-Type: application/vnd.api+json" \
+  --data '{
+  "data": {
+    "attributes": {
+      // highlight-next-line
+      "name": "vertex-valve.jt"
+    },
+    "type": "file"
+  }
+}'
+```
+
+</TabItem>
+<TabItem value="res">
+
+```json
+{
+  "data": {
+    "attributes": {
+      "created": "2021-01-01T12:00:00.000Z",
+      "name": "vertex-valve.jt",
+      "status": "pending"
+    },
+    // highlight-next-line
+    "id": "[YOUR_FILE_ID]",
+    "type": "file"
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+Now that the file resource exists, `POST` to the [uploadFile](https://docs.vertexvis.com/#0b0a01c2-831d-4b01-87ea-765d4f2e6c1a) API.
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request POST \
+  // highlight-next-line
+  --url "https://platform.vertexvis.com/files/[YOUR_FILE_ID]" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+  --header "Content-Type: application/octet-stream" \
+  --upload-file "[YOUR_PATH_TO_3D_DATA_FILE_INCLUDING_FILE_EXTENSION]"
+```
+
+</TabItem>
+<TabItem value="res">
+
+`204: No Content`
+
+</TabItem>
+</Tabs>
+
+## Creating parts
+
+To make querying for parts easier, Vertex supports supplied IDs. You supply these IDs, likely using existing part and revision IDs from your PLM system. To initiate translations, `POST` to the [createPart](https://docs.vertexvis.com/#05c13b3e-b407-4b19-b110-e6bdc016a714) API. This API is asynchronous, returning the status of a queued translation.
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request POST \
+  --url "https://platform.vertexvis.com/parts" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+  --header "Content-Type: application/vnd.api+json" \
+  --data '{
+  "data": {
+    "attributes": {
+      // highlight-start
+      "suppliedId": "[YOUR_SUPPLIED_ID]",
+      "suppliedRevisionId": "[YOUR_SUPPLIED_REVISION_ID]"
+      // highlight-end
+    },
+    "relationships": {
+      "source": {
+        "data": {
+          // highlight-next-line
+          "id": "[YOUR_FILE_ID]",
+          "type": "file"
+        }
+      }
+    },
+    "type": "part"
+  }
+}'
+```
+
+</TabItem>
+<TabItem value="res">
+
+```json
+{
+  "data": {
+    "attributes": {
+      "status": "running"
+    },
+    // highlight-next-line
+    "id": "[YOUR_QUEUED_TRANSLATION_ID]",
+    "type": "queued-translation"
+  }
+}
+```
+
+</TabItem>
+</Tabs>
+
+To check the status of queued translations, `GET` the [getQueuedTranslation](https://docs.vertexvis.com/#9d4734b1-3300-46bb-bb87-85d23b5e52a3) API. The response returns one of the following:
+
+- The status if `running`.
+- An `error` (similar to the response above).
+- Upon completion, redirects to the created part.
+
+:::note
+The `PART_ID` returned is for the root assembly or part. If your file contains a hierarchy, query for other parts using the [getParts](https://docs.vertexvis.com/#25778d06-038f-410f-bb67-503c932a59a8) API.
+:::
+
+<Tabs
+  defaultValue="req"
+  values={[
+    { label: 'Request', value: 'req', },
+    { label: 'Response', value: 'res', },
+  ]
+}>
+<TabItem value="req">
+
+```shell
+curl --location --request GET \
+  // highlight-next-line
+  --url "https://platform.vertexvis.com/queued-translations/[YOUR_QUEUED_TRANSLATION_ID]" \
+  --header "Authorization: Bearer [YOUR_ACCESS_TOKEN]" \
+  --location
+```
+
+</TabItem>
+<TabItem value="res">
+
+```json
+{
+  "data": {
+    "attributes": {
+      "created": "2021-01-01T12:00:00.000Z",
+      "name": "[YOUR_NAME]",
+      "suppliedId": "[YOUR_SUPPLIED_ID]"
+    },
+    // highlight-next-line
+    "id": "[YOUR_PART_ID]",
+    "relationships": {
+      "partRevisions": [
+        {
+          // highlight-next-line
+          "id": "[YOUR_PART_REVISION_ID]",
+          "type": "part-revision"
+        }
+      ]
+    },
+    "type": "part"
+  },
+  "included": [
+    {
+      "data": {
+        "attributes": {
+          "created": "2021-01-01T12:00:00.000Z",
+          "name": "[YOUR_NAME]",
+          "suppliedId": "[YOUR_SUPPLIED_ID]"
+        },
+        "id": "[YOUR_PART_REVISION_ID]",
+        "relationships": {
+          "part": {
+            "id": "[YOUR_PART_ID]",
+            "type": "part"
+          }
+        },
+        "type": "part-revision"
+      }
+    }
+  ]
+}
+```
+
+</TabItem>
+</Tabs>

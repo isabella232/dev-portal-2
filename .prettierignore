@@ -1,0 +1,5 @@
+.docusaurus/
+build/
+static/examples/
+
+.github/pull_request_template.md
