@@ -39,7 +39,7 @@ const gettingStarted = [
       },
     ],
     cta_links: false,
-    classes: 'col col--6 first',
+    classes: 'col col--4 first',
   },
   {
     title: <>Import data</>,
@@ -80,7 +80,30 @@ const gettingStarted = [
         url: '/docs/guides/import-metadata',
       },
     ],
-    classes: 'col col--6',
+    classes: 'col col--4',
+  },
+  {
+    title: <>Build your first application</>,
+    icon: (
+      <>
+        <svg height="29" width="29" viewBox="0 0 25.38 25.38" xmlns="http://www.w3.org/2000/svg"><g fill="#00ade4" transform="translate(-1.81 -1.81)"><path d="m24.47 16.31h-5.47a2.72 2.72 0 0 0 -2.69 2.69v5.44a2.72 2.72 0 0 0 2.69 2.75h5.44a2.72 2.72 0 0 0 2.72-2.72v-5.47a2.72 2.72 0 0 0 -2.69-2.69zm.91 8.16a.91.91 0 0 1 -.91.91h-5.47a.91.91 0 0 1 -.91-.91v-4.53h7.26z"/><path d="m10 16.31h-5.47a2.72 2.72 0 0 0 -2.72 2.69v5.44a2.72 2.72 0 0 0 2.72 2.72h5.47a2.72 2.72 0 0 0 2.72-2.72v-5.44a2.72 2.72 0 0 0 -2.72-2.69zm.91 8.16a.91.91 0 0 1 -.91.91h-5.47a.91.91 0 0 1 -.91-.91v-4.53h7.26z"/><path d="m24.47 1.81h-5.47a2.72 2.72 0 0 0 -2.72 2.72v5.47a2.72 2.72 0 0 0 2.72 2.69h5.44a2.72 2.72 0 0 0 2.75-2.69v-5.47a2.72 2.72 0 0 0 -2.72-2.72zm.91 8.19a.91.91 0 0 1 -.91.91h-5.47a.91.91 0 0 1 -.91-.91v-4.56h7.26z"/><path d="m10 1.81h-5.47a2.72 2.72 0 0 0 -2.72 2.72v5.47a2.72 2.72 0 0 0 2.72 2.72h5.47a2.72 2.72 0 0 0 2.69-2.72v-5.47a2.72 2.72 0 0 0 -2.69-2.72zm.88 8.19a.91.91 0 0 1 -.91.91h-5.44a.91.91 0 0 1 -.91-.91v-4.56h7.26z"/></g></svg>
+      </>
+    ),
+    description: (
+      <>
+        Deploy a full stack NextJS application using our template as a starting
+        point. Add your own functionality to customize the application and take
+        full advantage of what Vertex has to offer.
+      </>
+    ),
+    callout: [
+      {
+        text: <>Build It</>,
+        url: '/docs/guides/build-your-first-app',
+      },
+    ],
+    cta_links: false,
+    classes: 'col col--4',
   },
 ];
 function GetStarted({ title, description, icon, callout, cta_links, classes }) {
@@ -336,8 +359,12 @@ const guideCards = [
         url: '/docs/guides/render-your-first-scene',
       },
       {
-        text: <>Import data</>,
+        text: <>Import data with CLI</>,
         url: '/docs/guides/import-data',
+      },
+      {
+        text: <>Build your first application</>,
+        url: '/docs/guides/build-your-first-app',
       },
     ],
   },
@@ -353,8 +380,16 @@ const guideCards = [
         url: '/docs/guides/authentication',
       },
       {
-        text: <>Import data</>,
+        text: <>Import data (API)</>,
         url: '/docs/guides/import-data-with-api',
+      },
+      {
+        text: <>Import metadata</>,
+        url: '/docs/guides/import-metadata',
+      },
+      {
+        text: <>Render static scenes</>,
+        url: '/docs/guides/render-static-scenes',
       },
     ],
   },
@@ -363,7 +398,7 @@ const guideCards = [
     title: <>Reference</>,
     cta_links: [
       {
-        text: <>Install the SDK</>,
+        text: <>Install Web UI Components</>,
         url: '/docs/guides/install-sdk',
       },
       {
@@ -379,7 +414,7 @@ const guideCards = [
         url: '/docs/guides/platform-architecture',
       },
       {
-        text: <>Matrix transformation</>,
+        text: <>Transformation matrices</>,
         url: '/docs/guides/transformation-matrices',
       },
       {
@@ -396,8 +431,8 @@ const guideCards = [
 
 function GuideCard({ title, cta_links }) {
   return (
-    <div className={classnames('guide-card', 'col', styles.guideCard)}>
-      <div className={classnames(styles.cardContent)}>
+    <div className={classnames('col', styles.guideCard)}>
+      <div className={classnames(styles.guideCardContent)}>
         <h2>{title}</h2>
         <div className={classnames(styles.cardLinks)}>
           {cta_links.length &&
@@ -411,6 +446,60 @@ function GuideCard({ title, cta_links }) {
                 </Link>
               </p>
             ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const sampleApps = [
+  {
+    title: <>3D Visual Analytics</>,
+    description: (
+      <>
+        Quickly connect external data sources to your 3D digital twin to 
+        accelerate quality, cost, and supply chain analyses and deliver 
+        powerful insights with ease. 
+      </>
+    ),
+    imageSrc: '/img/examples/visual analytics-card.png',
+    url: '/examples/3d-visual-analytics',
+    width: 'col--6',
+  },
+  {
+    title: <>Digital Twin</>,
+    description: (
+      <>
+        Visualize IoT time series data aligned to your 3D digital twin to 
+        improve decision-making and increase the effectiveness of IoT analytics.
+      </>
+    ),
+    imageSrc: '/img/examples/digital-twin-card.png',
+    url: '/examples/digital-twin',
+    width: 'col--6',
+  },
+];
+
+function SampleApp({ title, description, imageSrc, url, width }) {
+  return (
+    <div
+      className={classnames('col', width, 'feature-card', styles.featureCard)}
+    >
+      <div
+        className={classnames(
+          'feature-card-content',
+          styles.featureCardContent
+        )}
+      >
+        <div className={classnames('header')}>
+          <img src={imageSrc} alt="" />
+        </div>
+        <div className={classnames('content')}>
+          <h2>{title}</h2>
+          <div className={classnames('intro')}>
+            <span>{description}</span>
+          </div>
+          <Link to={url} className={classnames('target')}></Link>
         </div>
       </div>
     </div>
@@ -475,11 +564,11 @@ function Home() {
             </section>
           )}
         </div>
-        <div className={classnames(styles.awsCallout, 'aws-callout')}>
+        <div className={classnames(styles.logoCallout, 'logo-callout')}>
           <div className={classnames('container')}>
             <div className={classnames('row')}>
               <div className={classnames('col col--9')}>
-                <h2 className={classnames(styles.awsMark)}>
+                <h2 className={classnames(styles.logoMark, styles.awsMark)}>
                   Ready to add 3D experiences to your applications and
                   workflows? Subscribe to the Vertex 3D Visualization Platform
                   through the AWS Marketplace:{' '}
@@ -494,10 +583,10 @@ function Home() {
                     to={'https://aws.amazon.com/marketplace/pp/B08PP264Z1'}
                     className={classnames(
                       'button button--secondary',
-                      styles.awsButton
+                      styles.callOutButton
                     )}
                   >
-                    Sign Up
+                    Sign Up Now
                   </Link>
                 </p>
               </div>
@@ -544,7 +633,7 @@ function Home() {
           )}
         </div>
         {guideCards && guideCards.length && (
-          <div className={classnames(styles.guideCardSection, styles.mainGray)}>
+          <div className={classnames(styles.guideCardSection)}>
             <div className={classnames('container')}>
               <div className={classnames('row')}>
                 <div className={classnames('col col--12')}>
@@ -553,6 +642,37 @@ function Home() {
                 {guideCards.map((props, idx) => (
                   <GuideCard key={idx} {...props} />
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+        {sampleApps && sampleApps.length && (
+          <div className={classnames(styles.sampleAppsSection, styles.mainGray)}>
+            <div className={classnames('container')}>
+              <div className={classnames('row')}>
+                <div
+                  className={classnames(
+                    'col',
+                    'col--12',
+                    styles.sampleAppsSectionHeader
+                  )}
+                >
+                  <h2 className={classnames('secondary')}>
+                    Examples
+                  </h2>
+                  <p>
+                    We built the following example applications to give you ideas
+                    about how you can use Vertex.
+                  </p>
+                </div>
+                {sampleApps.map((props, idx) => (
+                  <SampleApp key={idx} {...props} />
+                ))}
+                <div className={classnames('col', 'col--12')}>
+                  <p>
+                    <Link to={'/examples'} className={classnames('non-button-link')}>More Examples</Link>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
