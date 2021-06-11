@@ -2,8 +2,6 @@ import React from 'react';
 import classnames from 'classnames';
 import Layout from '@theme/Layout';
 import Link from '@docusaurus/Link';
-import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
-import useBaseUrl from '@docusaurus/useBaseUrl';
 import styles from '../styles.module.css';
 
 const SSFeatures = [
@@ -179,7 +177,7 @@ const sampleApps = [
   },
 ];
 
-function SampleApp({ title, description, imageSrc, url, width }) {
+function SampleApp({ title, description, url }) {
   return (
     <div className={classnames('col', 'feature-card', styles.featureCard)}>
       <div
@@ -201,8 +199,6 @@ function SampleApp({ title, description, imageSrc, url, width }) {
 }
 
 function SceneStudio() {
-  const context = useDocusaurusContext();
-  const { siteConfig = {} } = context;
   return (
     <Layout
       title={`Scene Studio Authoring Tool | Vertex Developer Portal`}
@@ -218,7 +214,7 @@ function SceneStudio() {
               </h1>
               <p>
                 Quickly author lightweight 3D content that can be integrated
-                with your Parts Catalog, Work Instructions, Training Materials,
+                with your parts catalog, work instructions, training materials,
                 and more.
               </p>
             </div>
