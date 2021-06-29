@@ -29,24 +29,24 @@ const sampleApps = [
     width: 'col--4',
   },
   {
-	title: <>3D Work Instructions</>,
-	description: (
-	  <>
-	    Optimize complex process workflows by connecting interactive visual 
-	    data to work instructions. Real-time 3D clarifies processes to improve 
-	    efficiency and quality.
-	  </>	
+    title: <>NextJS Starter</>,
+    description: (
+      <>
+        We created our full stack, deployable starter application using the
+        NextJS framework. Quickly and easily build your own prototype
+        application that takes full advantage of the Vertex platform.
+      </>
     ),
-    imageSrc: '/img/examples/work-instructions-card.png',
-    url: '/examples/work-instructions',
-    cta: 'Try it Out',
-	width: 'col--6'
+    url: '/examples/nextjs',
+    width: 'col--4',
   },
 ];
 
-function SampleApp({ title, description, url }) {
+function SampleApp({ title, description, url, width }) {
   return (
-    <div className={classnames('col', 'feature-card', styles.featureCard)}>
+    <div
+      className={classnames('col', width, 'feature-card', styles.featureCard)}
+    >
       <div
         className={classnames(
           'feature-card-content',
@@ -65,28 +65,24 @@ function SampleApp({ title, description, url }) {
   );
 }
 
-function SceneStudio() {
+function WorkInstructions() {
   return (
     <Layout
-      title={`Scene Studio Authoring Tool | Vertex Developer Portal`}
-      description="Example of how to quickly integrate 3D content with your parts catalog, training materials, and more."
+      title={`3D Work Instructions | Vertex Developer Portal`}
+      description="Example of how to connect 3D digital twins to your existing processes and workflows."
     >
       <header className={classnames(styles.LPhero, styles.lightHero)}>
         <div className={classnames('container')}>
           <div className={classnames('row')}>
             <div className={classnames('col')}>
-              <h1>
-                Scene Studio&trade;{' '}
-                <span className={classnames('tag-pill')}>Beta</span>
-              </h1>
+              <h1>3D Work Instructions</h1>
               <p>
-                Quickly author lightweight 3D content that can be integrated
-                with your parts catalog, work instructions, training materials,
-                and more.
+                Bring clarity to your processes by connecting 3D digital twins 
+                to your work instructions.
               </p>
             </div>
             <div className={classnames('col', 'col--8', 'col--offset-2')}>
-              <img src="/img/scene-studio/scene-studio.png" alt="" />
+              <img src="/img/examples/work-instructions.png" alt="" />
             </div>
             <div
               className={classnames(
@@ -100,15 +96,17 @@ function SceneStudio() {
                 What you can do with this application
               </h2>
               <p className={classnames(styles.normalParagraph)}>
-                View a scene and transform parts along the X, Y, and Z axes. 
-                You can also display part properties and change part visibility 
-                using the BOM. Scene Studio makes it easy to visualize your data 
-                in context so teammates can be more efficient, collaborative, 
-                and innovative.
+                Visualize your data in context by building a fully interactive 
+                3D digital twin for your work instructions. Create a sequence of 
+                steps that includes dynamic 3D snapshots of the required parts 
+                along with written instructions. Choose if you want to ghost 
+                model geometry that's not part of the active step or hide it 
+                completely. You can also connect your issue-tracking tool to 
+                report issues and enter feature requests.
               </p>
               <div className={classnames(styles.textCenter)}>
                 <Link
-                  to={'https://scene-studio.vertexvis.io'}
+                  to={'https://work-instructions-demo.vercel.app/'}
                   className={classnames('button button--primary')}
                 >
                   Launch App
@@ -190,4 +188,4 @@ function SceneStudio() {
   );
 }
 
-export default SceneStudio;
+export default WorkInstructions;
